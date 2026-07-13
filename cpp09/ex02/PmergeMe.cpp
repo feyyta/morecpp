@@ -6,7 +6,7 @@
 /*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/30 17:00:00 by mcastrat          #+#    #+#             */
-/*   Updated: 2026/07/03 14:32:39 by mcastrat         ###   ########.fr       */
+/*   Updated: 2026/07/03 17:00:26 by mcastrat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,23 +103,19 @@ static void printSeq(const std::string &input, const std::vector<int> &v){
 static double timeu(){
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000000.0 + tv.tv_usec);//micro
+    return (tv.tv_sec * 1000000.0 + tv.tv_usec);
 }
 
 void PmergeMe::run(){
     printSeq("before:", _vec);
     double startVec = timeu();
-    std::vector<int> v(_vec);//gestion des donnees : remplissage du conteneur de travail
-    sortVector(v);
+    sortVector(_vec);
     double endVec = timeu();
-    _vec = v;
-
+    
     double startDeq = timeu();
-    std::deque<int> d(_deq);//pareil pour la deque
-    sortDeque(d);
+    sortDeque(_deq);
     double endDeq = timeu();
-    _deq = d;
-
+    
     printSeq("after: ", _vec);
     double usVec = endVec - startVec;
     double usDeq = endDeq - startDeq;
@@ -136,7 +132,7 @@ static int toPositiveInt(const std::string &v){
         if (v[i] < '0' || v[i] > '9')
             throw std::runtime_error("Error");
     }
-    long value = std::strtol(v.c_str(), NULL, 10);//overflow hdl
+    long value = std::strtol(v.c_str(), NULL, 10);
     if (value > INT_MAX)
         throw std::runtime_error("Error");
     return (static_cast<int>(value));
@@ -144,10 +140,12 @@ static int toPositiveInt(const std::string &v){
 
 void PmergeMe::parse(int argc, char **argv){
     for (int i = 1; i < argc; ++i){
-        std::istringstream flux(argv[i]);//lis mot par mot
+        std::istringstream flux(argv[i]);
         std::string word;
         while (flux >> word){
             int n = toPositiveInt(word);
+            if (std::find(_vec.begin(), _vec.end(), n) != _vec.end())
+                throw std::runtime_error("Error");
             _vec.push_back(n);
             _deq.push_back(n);
         }

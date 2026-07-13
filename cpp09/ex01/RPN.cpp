@@ -6,7 +6,7 @@
 /*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/05 08:20:58 by mcastrat          #+#    #+#             */
-/*   Updated: 2026/07/03 14:20:40 by mcastrat         ###   ########.fr       */
+/*   Updated: 2026/07/03 18:54:10 by mcastrat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void RPN::applyOperator(char op){
     if (_stack.size() < 2)
         throw std::runtime_error("Error");
         
-    long b = _stack.top();//lis copy dans b// debut de la pile donc chiffre
+    long b = _stack.top();
     _stack.pop();//retire
     long a = _stack.top();
     _stack.pop();
@@ -57,11 +57,11 @@ void RPN::applyOperator(char op){
     }
 }
 
-long RPN::evaluate(const std::string &input){
+long RPN::eval(const std::string &input){
     std::istringstream flux(input);
     std::string token;
 
-    while (flux >> token){//lis token par token skip 32 et sz 1 ( nombre plus que 10 et t oken chelou)
+    while (flux >> token){
         if (token.size() == 1 && isdigit(token[0]))
             _stack.push(token[0] - '0'); // tk < 10
         else if (token.size() == 1 && isOperator(token[0]))

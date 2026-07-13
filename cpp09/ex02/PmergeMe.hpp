@@ -6,7 +6,7 @@
 /*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/30 17:00:00 by mcastrat          #+#    #+#             */
-/*   Updated: 2026/07/01 14:06:41 by mcastrat         ###   ########.fr       */
+/*   Updated: 2026/07/04 13:24:15 by mcastrat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <stdexcept>
+#include <stdexcept> 
 #include <sstream>
 #include <climits>
 #include <cstdlib>

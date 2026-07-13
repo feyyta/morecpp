@@ -6,7 +6,7 @@
 /*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/03 08:10:03 by mcastrat          #+#    #+#             */
-/*   Updated: 2026/07/03 13:56:03 by mcastrat         ###   ########.fr       */
+/*   Updated: 2026/07/03 16:23:56 by mcastrat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static int checkExt(char *str)
 
 int main(int argc, char **argv){
     if (argc != 2 || checkExt(argv[1])){
-        std::cerr << "Error: could not open file." << std::endl;
+        std::cerr << "Error: could not open file" << std::endl;
         return (1);
     }
 

@@ -6,13 +6,11 @@
 /*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/03 08:09:58 by mcastrat          #+#    #+#             */
-/*   Updated: 2026/07/03 14:32:20 by mcastrat         ###   ########.fr       */
+/*   Updated: 2026/07/03 16:25:04 by mcastrat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "BitcoinExchange.hpp"
-#include <cstdlib>
-#include <cctype>
 
 BitcoinExchange::BitcoinExchange(){
 }
@@ -31,7 +29,7 @@ BitcoinExchange::~BitcoinExchange(){
 }
 
 
-static std::string trim(const std::string &s){//retire tab et espace debut fin de string
+static std::string trim(const std::string &s){
     size_t start = s.find_first_not_of(" \t");
     if (start == std::string::npos)
         return ("");
@@ -39,7 +37,7 @@ static std::string trim(const std::string &s){//retire tab et espace debut fin d
     return (s.substr(start, end - start + 1));
 }
 
-static int isValidDate(const std::string &date){// check placement de string pour date valable
+static int isValidDate(const std::string &date){
     if (date.size() != 10 || date[4] != '-' || date[7] != '-')
         return (0);
     for (size_t i = 0; i < 10; i++){
@@ -60,7 +58,7 @@ static int isValidDate(const std::string &date){// check placement de string pou
 static int parseValue(const std::string &valueStr, double &value){
     char *end;
     value = strtod(valueStr.c_str(), &end);
-    return (*end == '\0' && end != valueStr.c_str());//all string parsed 
+    return (*end == '\0' && end != valueStr.c_str());
 }
 
 static int validateValue(double value){
@@ -88,9 +86,9 @@ static int parseLine(const std::string &line, std::string &date, double &value){
     }
     if (!validateValue(value)){
         if (value < 0)
-            std::cout << "Error: not a positive number." << std::endl;
+            std::cout << "Error: not a positive number " << std::endl;
         else
-            std::cout << "Error: too large a number." << std::endl;
+            std::cout << "Error: too large a number" << std::endl;
         return (0);
     }
     return (1);
@@ -107,7 +105,7 @@ float BitcoinExchange::getRate(const std::string &date) const{
         if (rit->first < date)
             return rit->second;
     }
-    throw std::runtime_error("Error: no data before this date.");
+    throw std::runtime_error("Error: no data before this date");
 }
 
 void BitcoinExchange::processLine(const std::string &date, double value) const{
@@ -123,7 +121,7 @@ void BitcoinExchange::processLine(const std::string &date, double value) const{
 void BitcoinExchange::processInput(const std::string &filename){
     std::ifstream file(filename.c_str());
     if (!file.is_open())
-        throw std::runtime_error("Error: could not open file.");
+        throw std::runtime_error("Error: could not open file");
 
     std::string line;
     std::getline(file, line);
@@ -138,10 +136,10 @@ void BitcoinExchange::processInput(const std::string &filename){
 void BitcoinExchange::loadDatabase(const std::string &filename){
     std::ifstream file(filename.c_str());
     if (!file.is_open())
-        throw std::runtime_error("Error: could not open file.");
+        throw std::runtime_error("Error: could not open file");
         
     std::string line;
-    std::getline(file, line); //jump date,exchange_rate
+    std::getline(file, line);
     while (std::getline(file, line)){
         size_t pos = line.find(',');
         if (pos == std::string::npos)

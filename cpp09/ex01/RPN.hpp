@@ -6,7 +6,7 @@
 /*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/05 08:21:03 by mcastrat          #+#    #+#             */
-/*   Updated: 2026/07/01 14:07:29 by mcastrat         ###   ########.fr       */
+/*   Updated: 2026/07/03 16:26:32 by mcastrat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ class RPN{
         RPN(const RPN &src);
         RPN &operator=(const RPN &rhs);
         ~RPN();
-        long evaluate(const std::string &input);
+        long eval(const std::string &input);
 };
 
 #endif
