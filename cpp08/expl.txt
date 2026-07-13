@@ -1,0 +1,27 @@
+dans ce module y a 3 sujet principaux conteneurs 1 iterateur 2 algo 3
+
+1 : conteneur c est des struct qui stock des data ( vector, list, stack ..)
+2 : iterateur,curseur generique pour n importe quel type de conteneur (begin end)
+3 : algo c est des fonctions generique de <alogrithm> qui taff sur les iterateur(std finf, sort) peut importe le conteneur
+
+ex00
+une ft template qui cherche un int dans n importe quel conteneur d int et renvoie un iterateur sinon exception
+find va parcourir la plage de begin a end si il trouve rien renvoie end
+typename T::iterator it le t pour dire explecitement ok c est un type
+et dcp on test avec vector list ect..
+
+ex01
+une classe qui stock jusqu a n entier et calcule le plus peetit et grand ecart entre 2 val stock
+sotck dans un vector int si moins de 2 elements on lance l exception
+on copie le vec dans tmp et on trie apres ca plus grand ecart et dernier premier et plus peetit
+entre 2 elem colle donc tmp[i] - tmp[i] tmp prcq methode const 
+add range remplie le span
+vector::insert la pos, first, last insert tt d un coup comme dmd dans le sujet
+pourquoi hpp le compilo doit voir le corps au moment de l instanciation
+
+ex02
+std stack est pas un vrai conteneur c est plus un adaptateur de conteneur il en enveloppe un (celui par default std deque) et 
+restreint son interface a push pop top size, consequence pas d iter et on ne peut pas le parcourir le but de l exo en gros
+std stack stock sont conteneur interner dans un membre protected c d ou l heritage pour ensuite exposer les iterateur 
+deque = double-ended queue — tableau dynamique qui permet
+  d'insérer/supprimer efficacement au début et à la fin

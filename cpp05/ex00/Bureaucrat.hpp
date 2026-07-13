@@ -1,0 +1,52 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Bureaucrat.hpp                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mcastrat <mcastrat@student.42belgium.be    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/07 11:53:49 by mcastrat          #+#    #+#             */
+/*   Updated: 2026/04/30 13:48:53 by mcastrat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef BUREAUCRAT_HPP
+# define BUREAUCRAT_HPP
+
+#include <string>
+#include <iostream>
+#include <exception>
+
+class Bureaucrat
+{
+private:
+	const std::string	_name;
+	int					_grade;
+
+public:
+	Bureaucrat();
+	~Bureaucrat();
+	Bureaucrat(const std::string name, int grade);
+	Bureaucrat(const Bureaucrat &src);
+	Bureaucrat& operator=(const Bureaucrat &rhs);
+	std::string	getName() const;
+	int			getGrade() const;
+	void	incrementGrade();
+	void	decrementGrade();
+	
+	//nested class herite de std exepction what msg err trhow ne lance pas d excep
+	class GradeTooHighException : public std::exception
+	{
+	public://virt to see type (gardetoohigh)
+		virtual const char* what() const throw();
+	};
+	class GradeTooLowException : public std::exception
+	{
+	public:
+		virtual const char* what() const throw();
+	};
+};
+
+std::ostream& operator<<(std::ostream &out, const Bureaucrat &bureaucrat);
+
+#endif

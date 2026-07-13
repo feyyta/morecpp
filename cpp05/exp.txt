@@ -1,0 +1,308 @@
+================================================================
+                  CPP05 - REPETITION AND EXCEPTIONS
+================================================================
+
+THEME GENERAL : exceptions C++ + heritage + polymorphisme
+Compilation : c++ -Wall -Wextra -Werror -std=c++98
+
+
+================================================================
+EX00 : Bureaucrat + exceptions
+================================================================
+
+OBJECTIF : creer une classe Bureaucrat avec un grade (1 = plus haut,
+150 = plus bas) qui throw des exceptions si grade hors limites.
+
+------ NOTIONS CLES ------
+
+1) THROW / TRY / CATCH
+   - throw lance une exception (arret immediat de la fonction)
+   - try { } englobe la zone surveillee
+   - catch (...) rattrape, et l execution continue apres
+   - Sans catch -> std::terminate() -> crash
+
+2) HERITAGE de std::exception
+   - On hierite pour beneficier de what() polymorphe
+   - Permet : catch (std::exception &e) qui attrape TOUS les descendants
+   - Convention C++ : toutes les exceptions custom doivent heriter
+
+3) NESTED CLASS
+   - GradeTooHighException definie DANS Bureaucrat
+   - Acces : Bureaucrat::GradeTooHighException
+   - Evite les conflits de noms (Form aura aussi sa GradeTooHigh)
+   - Lie l exception a son contexte logique
+
+4) const throw() apres what()
+   - const = la methode ne modifie pas l objet
+   - throw() = "cette fonction ne lance AUCUNE exception" (C++98)
+   - Important : what() est appelee pendant un catch, si elle throw
+     a son tour -> std::terminate immediat
+   - En C++11+ on dirait noexcept
+
+5) SIGNATURE COMPLETE
+   virtual const char* what() const throw();
+   - virtual : polymorphisme (version de la fille appelee)
+   - const char* : pointeur vers chaine non modifiable
+   - what() : nom + 0 args
+   - const : ne modifie pas l objet
+   - throw() : ne lance pas
+
+6) SURCHARGE OPERATOR<<
+   - Fonction LIBRE (pas membre) car on veut cout a gauche
+   - Retourne ostream& pour permettre chainage cout << a << b
+   - Prend const Bureaucrat& : reference (pas de copie) + const
+     (promesse de pas modifier)
+
+7) const PARTOUT - pourquoi
+   - const std::string _name : nom fige a la creation
+     -> consequence : operator= ne peut pas copier _name, copie juste _grade
+   - const Bureaucrat &src : pas de copie + garantie immutabilite
+   - int getGrade() const : promet de pas modifier l objet
+     -> permet d appeler le getter sur un const Bureaucrat&
+   - const char* what() : retour non modifiable
+
+8) ORTHODOX CANONICAL FORM (OCF)
+   - Default constructor
+   - Copy constructor
+   - Operator=
+   - Destructor
+
+9) REGLES METIER
+   - Grade < 1 -> GradeTooHigh (ironique mais c est le sujet)
+   - Grade > 150 -> GradeTooLow
+   - increment baisse le nombre, decrement augmente
+
+
+================================================================
+EX01 : Form + signature
+================================================================
+
+OBJECTIF : ajouter une classe Form que le Bureaucrat peut signer.
+
+------ NOTIONS NOUVELLES ------
+
+1) FORWARD DECLARATION
+   - Dans Form.hpp : class Bureaucrat;
+   - Dit au compilo "cette classe existe", sans inclure son .hpp
+   - Evite les inclusions circulaires (Form <-> Bureaucrat)
+   - Suffit pour pointeur/reference dans un header
+   - Le .cpp inclut le vrai .hpp quand il appelle des methodes
+
+2) ATTRIBUTS const
+   - const string _name
+   - const int _gradetosign
+   - const int _gradetoexec
+   - bool _signed (PAS const, le seul mutable)
+   -> operator= copie uniquement _signed
+
+3) RESPONSABILITES
+   - beSigned(Bureaucrat&) dans Form : la Form verifie elle-meme
+     si le grade est suffisant. Throw si non.
+   - signForm(Form&) dans Bureaucrat : enrobe beSigned dans try/catch
+     et affiche un message friendly
+
+4) PATTERN
+   - Couche basse (beSigned) : politique stricte, throw si invalide
+   - Couche haute (signForm) : rattrape et formate
+   -> le main reste lisible
+
+5) CONSTRUCTOR EXCEPTION SAFETY
+   - Si throw dans le ctor, l objet n est pas considere construit
+   - Le destructor n est PAS appele
+   - Pas de fuite memoire pour les attributs deja initialises
+
+
+================================================================
+EX02 : AForm (abstract) + 3 filles concretes
+================================================================
+
+OBJECTIF : transformer Form en classe abstraite AForm + creer
+3 implementations qui font chacune une action.
+
+------ NOTIONS NOUVELLES ------
+
+1) CLASSE ABSTRAITE
+   - virtual void executeAction() const = 0;
+   - Le "= 0" -> fonction virtuelle PURE
+   - Consequence : AForm ne peut pas etre instanciee
+     * AForm a;        -> ERREUR
+     * new AForm();    -> ERREUR
+     * AForm *p;       -> OK (juste un pointeur, aucun objet cree)
+     * new ShrubberyCreationForm() avec stockage dans AForm* -> OK
+   - Toute classe fille DOIT implementer executeAction sinon reste
+     abstraite
+
+2) DESTRUCTEUR VIRTUAL (CRITIQUE)
+   - virtual ~AForm();
+   - Sans virtual : delete sur un AForm* qui pointe sur une fille
+     -> seul ~AForm est appele -> fuite memoire
+   - Avec virtual : ~Fille puis ~AForm appeles automatiquement
+
+3) TEMPLATE METHOD PATTERN
+   void AForm::execute(const Bureaucrat &executor) const {
+       if (!_signed) throw NotSignedException();
+       if (executor.getGrade() > _gradetoexec) throw GradeTooLow();
+       executeAction();   // version de la fille (virtual)
+   }
+   - La mere centralise les verifications
+   - La fille ne s occupe que de l action metier
+   - Pas de duplication, impossible d oublier les verifs
+
+4) HERITAGE PUBLIC
+   class ShrubberyCreationForm : public AForm { ... };
+   - public = relation "is-a" exposee
+   - Un Shrubbery EST un AForm
+   - Permet AForm *p = new ShrubberyCreationForm()
+
+5) APPELS DU PARENT DANS LES FILLES
+   - Constructor :
+     ShrubberyCreationForm(target) : AForm("name", 145, 137), _target(target) {}
+   - Copy constructor :
+     ShrubberyCreationForm(src) : AForm(src), _target(src._target) {}
+   - Operator= :
+     AForm::operator=(rhs); _target = rhs._target;
+   -> sans ces appels, la partie heritee n est pas geree
+
+6) LES 3 FORMS
+   ----------------------------------------------------
+   | Form                  | sign | exec | action     |
+   ----------------------------------------------------
+   | Shrubbery             | 145  | 137  | ecrit fichier <target>_shrubbery (arbre ASCII)
+   | Robotomy              |  72  |  45  | "BZZZZZZZT" + 50% succes/echec (rand%2)
+   | PresidentialPardon    |  25  |   5  | cout pardon par Zaphod
+   ----------------------------------------------------
+
+7) DETAILS
+   - Shrubbery : ofstream + .c_str() (C++98 n accepte pas string direct)
+                 RAII : fichier ferme auto en sortie de scope
+   - Robotomy : std::rand() % 2 (sans srand donc deterministe)
+   - executeForm dans Bureaucrat = symetrique de signForm
+
+8) POLYMORPHISME EN ACTION
+   AForm *f = new ShrubberyCreationForm("garden");
+   f->execute(bob);   -> appelle ShrubberyCreationForm::executeAction
+   delete f;          -> ~Shrubbery puis ~AForm grace au virtual
+
+9) CONDITIONS POUR EXECUTION
+   - Form DOIT etre signee
+   - Bureaucrat DOIT avoir grade <= gradeToExec
+   - Le signataire et l executant peuvent etre differents
+
+
+================================================================
+EX03 : Intern (factory)
+================================================================
+
+OBJECTIF : ajouter Intern qui cree une form a partir d un STRING
+(nom de la form au runtime).
+
+------ NOTIONS NOUVELLES ------
+
+1) POURQUOI INTERN
+   - En ex02 : on instancie en dur (ShrubberyCreationForm f("x"))
+   - En ex03 : on recoit un string et on doit choisir le bon type
+   - Utile quand le nom vient d un fichier, utilisateur, reseau...
+
+2) TABLEAU DE POINTEURS SUR FONCTIONS
+   AForm* (*ft[3])(const std::string &);
+   Lecture (de l interieur vers l exterieur) :
+   - ft        : nom
+   - ft[3]     : tableau de 3 elements
+   - *ft[3]    : pointeurs
+   - (*ft[3])(const string&)  : pointeurs vers fonctions prenant const string&
+   - AForm* (*ft[3])(...)     : qui retournent AForm*
+
+3) FONCTIONS WRAPPER static
+   static AForm* makeShrubbery(const std::string &t) {
+       return new ShrubberyCreationForm(t);
+   }
+   - static = linkage interne (visible seulement dans Intern.cpp)
+   - Necessaires car on ne peut pas prendre l adresse d un constructor
+   - Toutes ont la meme signature -> stockables dans un tableau homogene
+
+4) DISPATCHER
+   std::string names[3];
+   AForm* (*ft[3])(const std::string &);
+   names[0] = "shrubbery creation"; ft[0] = makeShrubbery;
+   names[1] = "robotomy request";   ft[1] = makeRobotomy;
+   names[2] = "presidential pardon"; ft[2] = makePardon;
+
+   for (int i = 0; i < 3; i++) {
+       if (formName == names[i])
+           return ft[i](target);   // appel via pointeur
+   }
+   return NULL;
+
+   - Deux tableaux paralleles (cle / valeur)
+   - Plus propre et extensible que if/else if
+
+5) RETURN NULL
+   - Si la form n existe pas -> renvoie NULL
+   - L appelant DOIT verifier : if (f) delete f;
+   - Alternative possible : throw une exception (plus lourd)
+   - delete sur NULL est safe en C++ (no-op)
+   - Dereferencer NULL = segfault
+
+6) GESTION MEMOIRE
+   - makeForm alloue avec new
+   - L APPELANT est responsable du delete
+   - Patterne classique :
+     AForm *f = intern.makeForm("...", "...");
+     bob.signForm(*f);
+     bob.executeForm(*f);
+     delete f;
+
+7) INTERN N EST PAS UN LIEN
+   - Intern fabrique, c est tout
+   - Apres creation, le Bureaucrat reprend la main
+   - Bureaucrat <-> Form reste comme en ex02
+
+
+================================================================
+RECAP DES PIEGES POSSIBLES EN EVAL
+================================================================
+
+1) Pourquoi const throw() ?
+   -> what() ne doit pas throw pendant un catch (sinon terminate)
+
+2) Pourquoi destructor virtual ?
+   -> sinon delete sur AForm* fuit la memoire de la fille
+
+3) Pourquoi forward declaration ?
+   -> evite inclusion circulaire entre Bureaucrat.hpp et Form.hpp
+
+4) Pourquoi AForm n est pas instanciable ?
+   -> classe abstraite (executeAction est = 0)
+
+5) Pourquoi pointeur AForm* est OK mais AForm direct non ?
+   -> pointeur = juste une adresse, aucun objet cree
+   -> objet = appel du constructor -> bloque par classe abstraite
+
+6) Pourquoi catch (std::exception &e) au lieu de (std::exception e) ?
+   -> par valeur = slicing -> perd le type reel -> what() generique
+   -> par reference = polymorphisme preserve -> bonne version de what()
+
+7) Pourquoi heriter de std::exception ?
+   -> permet catch generique
+   -> compatible avec STL
+   -> what() polymorphe gratuit
+
+8) Pourquoi nester l exception dans la classe ?
+   -> scope propre + evite collision (Bureaucrat::GradeTooHigh
+     vs Form::GradeTooHigh)
+
+9) Pourquoi static devant les makeXxx ?
+   -> linkage interne, visibles uniquement dans Intern.cpp
+
+10) Pourquoi return NULL et pas exception dans makeForm ?
+    -> choix de design, plus simple, sujet ne demande pas
+    -> appelant doit checker if(f) avant delete
+
+11) Difference signForm const ?
+    - signForm n est PAS const (modifie la form via beSigned)
+    - executeForm EST const (pas de modification)
+
+12) Liste d initialisation pourquoi ?
+    - const ne peut etre init QUE dans la liste d init
+    - Reference idem
+    - Plus efficace (pas de default construct + assign)

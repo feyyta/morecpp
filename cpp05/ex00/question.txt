@@ -1,0 +1,2 @@
+ex01 : std expeptio &e a quoi sert le e et j aimerai comprendre plus profondement le throw catch
+
